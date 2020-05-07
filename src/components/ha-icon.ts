@@ -37,6 +37,7 @@ get("_version", iconStore).then((version) => {
 
 const chunks: Chunks = {};
 const MDI_PREFIXES = ["mdi", "hass", "hassio", "hademo"];
+const ghettocache: any = {};
 
 const findIconChunk = (icon): string => {
   let lastChunk: IconMeta;
@@ -100,9 +101,16 @@ export class HaIcon extends LitElement {
     this._noMdi = false;
 
     const iconName = icon[1];
+
+    if (iconName in ghettocache) {
+      this._path = ghettocache[iconName];
+      return;
+    }
+
     const cachedPath: string = await get(iconName, iconStore);
     if (cachedPath) {
       this._path = cachedPath;
+      ghettocache[iconName] = cachedPath;
       return;
     }
     const chunk = findIconChunk(iconName);
@@ -122,6 +130,7 @@ export class HaIcon extends LitElement {
   private async _setPath(promise: Promise<Icons>, iconName: string) {
     const iconPack = await promise;
     this._path = iconPack[iconName];
+    ghettocache[iconName] = iconPack[iconName];
   }
 
   static get styles(): CSSResult {
